@@ -111,11 +111,7 @@ func (s *Service) Submit(ctx context.Context, req SubmitRequest) (*SubmitResult,
 
 	reserved, quotaID, err := s.reserveQuotaWithRetry(ctx, quotaType, dateStr, limit, req.CargoVolume, 25)
 	if err != nil {
-		code := apperr.CodeInternal
-		if apperr.IsQuotaExceeded(err) {
-			s.logger.Warn("quota rejection treated as storage failure", apperr.F("ship", req.ShipName))
-		}
-		return nil, apperr.Wrap(code, "quota reservation failed", err)
+		return nil, err
 	}
 	if !reserved {
 		s.logger.Warn("quota exceeded, rejecting declaration",

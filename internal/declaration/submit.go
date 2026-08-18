@@ -22,7 +22,7 @@ func (s *Service) reserveQuotaWithRetry(ctx context.Context, quotaType domain.Qu
 			return false, "", apperr.Wrap(apperr.CodeInternal, "quota lookup failed", err)
 		}
 		if q.Available() < amount {
-			return false, q.ID, apperr.QuotaExceeded(string(quotaType), limit, amount)
+			return false, q.ID, nil
 		}
 		affected, err := s.quota.ReserveQuota(ctx, q.ID, amount, q.Version)
 		if err != nil {
