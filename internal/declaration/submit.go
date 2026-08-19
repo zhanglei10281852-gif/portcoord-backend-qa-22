@@ -21,8 +21,11 @@ func (s *Service) reserveQuotaWithRetry(ctx context.Context, quotaType domain.Qu
 		if err != nil {
 			return false, "", apperr.Wrap(apperr.CodeInternal, "quota lookup failed", err)
 		}
+		// Quota exhaustion is a normal capacity rejection, not a storage
+		// failure: surface it as a clean "not reserved" signal so the caller
+		// can reply with a retryable rejection rather than an internal error.
 		if q.Available() < amount {
-			return false, q.ID, apperr.QuotaExceeded(string(quotaType), limit, amount)
+			return false, q.ID, nil
 		}
 		affected, err := s.quota.ReserveQuota(ctx, q.ID, amount, q.Version)
 		if err != nil {
